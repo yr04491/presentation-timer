@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b0b0d">
+  <meta name="description" content="オフラインでも使える、発表用のベル付きタイマー">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="発表タイマー">
+  <title>発表タイマー</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app">
+    <section class="display" aria-live="off">
+      <button id="fsBtn" class="fs-btn" type="button" hidden>全画面</button>
+      <div class="label">残り時間</div>
+      <div id="remain" class="remain">15:00</div>
+      <div class="sub">
+        <span class="label">経過</span>
+        <span id="elapsed" class="elapsed">00:00</span>
+      </div>
+      <div class="lamps" aria-label="鳴ったベル">
+        <span class="lamp" data-bell="1">1</span>
+        <span class="lamp" data-bell="2">2</span>
+        <span class="lamp" data-bell="3">3</span>
+      </div>
+    </section>
+
+    <section class="controls">
+      <button id="startBtn" class="btn primary" type="button">開始</button>
+      <button id="resetBtn" class="btn" type="button">リセット</button>
+      <button id="bellBtn" class="btn" type="button">鈴</button>
+      <button id="lapBtn" class="btn" type="button">ラップ</button>
+    </section>
+
+    <section class="panel">
+      <h2>設定</h2>
+      <div class="row">
+        <label for="duration">発表時間</label>
+        <span class="field"><input id="duration" type="number" inputmode="numeric" min="1" max="180" step="1"> 分</span>
+      </div>
+      <div id="bells"></div>
+      <p class="note">設定はこの端末に保存されます。</p>
+    </section>
+
+    <section class="panel">
+      <h2>ラップ</h2>
+      <ol id="laps" class="laps" reversed></ol>
+      <p id="lapsEmpty" class="note">まだありません。</p>
+    </section>
+
+    <footer class="footer">
+      <span id="offline" class="note"></span>
+      <span class="note keys">PC：スペース＝開始/停止、B＝鈴、L＝ラップ、F＝全画面</span>
+    </footer>
+  </main>
+
+  <template id="bellRow">
+    <div class="row bell-row">
+      <label class="bell-name"><input type="checkbox" class="on"> <span></span></label>
+      <span class="field">
+        <select class="mode">
+          <option value="remain">残り</option>
+          <option value="elapsed">経過</option>
+        </select>
+        <input class="min" type="number" inputmode="numeric" min="0" max="180" step="1"> 分
+      </span>
+      <span class="hint"></span>
+    </div>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>
