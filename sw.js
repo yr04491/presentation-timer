@@ -1,5 +1,5 @@
 // 一度開いたらネットなしでも使えるように、ファイルを端末に保存する
-const CACHE = 'presentation-timer-v2';
+const CACHE = 'presentation-timer-v3';
 const FILES = [
   './',
   './index.html',
@@ -10,6 +10,9 @@ const FILES = [
   './icon-192.png',
   './icon-512.png',
   './apple-touch-icon.png',
+  './bell1.mp3',
+  './bell2.mp3',
+  './bell3.mp3',
 ];
 
 self.addEventListener('install', (event) => {

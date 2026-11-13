@@ -70,63 +70,21 @@
     return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
   }
 
-  // ---------- ベルの音（プログラムで合成し、WAVにして再生） ----------
-  const SAMPLE_RATE = 44100;
-
-  function synthBell(strikes) {
-    const gap = 0.42;          // 打つ間隔（秒）
-    const ring = 2.6;          // 1打の余韻（秒）
-    const len = Math.ceil((gap * (strikes - 1) + ring) * SAMPLE_RATE);
-    const data = new Float32Array(len);
-    const base = 1480;
-    // 卓上ベルのような、倍音が整数倍でない金属音
-    const partials = [
-      { r: 1.0, a: 1.0, d: 1.5 },
-      { r: 1.0012, a: 0.6, d: 1.4 },   // わずかなうなり
-      { r: 2.38, a: 0.45, d: 0.8 },
-      { r: 4.12, a: 0.25, d: 0.45 },
-      { r: 6.31, a: 0.12, d: 0.25 },
-    ];
-    for (let k = 0; k < strikes; k++) {
-      const off = Math.floor(k * gap * SAMPLE_RATE);
-      const n = Math.floor(ring * SAMPLE_RATE);
-      for (let i = 0; i < n && off + i < len; i++) {
-        const t = i / SAMPLE_RATE;
-        const attack = Math.min(1, t / 0.002);
-        let v = 0;
-        for (const p of partials) {
-          v += p.a * Math.exp(-t / p.d) * Math.sin(2 * Math.PI * base * p.r * t);
-        }
-        data[off + i] += v * attack;
-      }
-    }
-    let peak = 0;
-    for (let i = 0; i < len; i++) peak = Math.max(peak, Math.abs(data[i]));
-    const gain = peak > 0 ? 0.9 / peak : 1;
-
-    const buf = new ArrayBuffer(44 + len * 2);
-    const dv = new DataView(buf);
-    const str = (o, s) => { for (let i = 0; i < s.length; i++) dv.setUint8(o + i, s.charCodeAt(i)); };
-    str(0, 'RIFF'); dv.setUint32(4, 36 + len * 2, true); str(8, 'WAVE');
-    str(12, 'fmt '); dv.setUint32(16, 16, true); dv.setUint16(20, 1, true); dv.setUint16(22, 1, true);
-    dv.setUint32(24, SAMPLE_RATE, true); dv.setUint32(28, SAMPLE_RATE * 2, true);
-    dv.setUint16(32, 2, true); dv.setUint16(34, 16, true);
-    str(36, 'data'); dv.setUint32(40, len * 2, true);
-    for (let i = 0; i < len; i++) {
-      const v = Math.max(-1, Math.min(1, data[i] * gain));
-      dv.setInt16(44 + i * 2, v < 0 ? v * 0x8000 : v * 0x7fff, true);
-    }
-    return URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }));
-  }
-
+  // ---------- ベルの音（bell1〜3.mp3 を再生） ----------
   // iPhoneのマナーモードでも鳴るように「再生」扱いにする（対応ブラウザのみ）
   try {
     if (navigator.audioSession) navigator.audioSession.type = 'playback';
   } catch (e) { /* 未対応 */ }
 
   const sounds = [1, 2, 3].map((n) => {
-    const a = new Audio(synthBell(n));
+    const file = 'bell' + n + '.mp3';
+    const a = new Audio(file);
     a.preload = 'auto';
+    // まるごと読み込んでから使う（オフラインのiPhoneでも鳴るように）。失敗したらファイルを直接使う
+    fetch(file)
+      .then((res) => (res.ok ? res.blob() : Promise.reject()))
+      .then((blob) => { a.src = URL.createObjectURL(blob); })
+      .catch(() => {});
     return a;
   });
 
